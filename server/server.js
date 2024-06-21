@@ -8,12 +8,12 @@ import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import postsRoutes from "./routes/post.routes.js";
 import commentRoutes from "./routes/comment.routes.js";
-import path, { join } from "path"; // Import dirname and join
-
+import path from "path";
 config();
 
 const __dirname = path.resolve();
 console.log("__dirname",__dirname);
+
 const app = express();
 
 app.use(express.json());

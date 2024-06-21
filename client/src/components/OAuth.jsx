@@ -6,7 +6,6 @@ import { signInSuccess } from "../redux/user/userSlice";
 import { useNavigate } from "react-router-dom";
 import { app } from "../firebase";
 
-console.log("app", app);
 export default function OAuth() {
   const auth = getAuth(app);
   const dispatch = useDispatch();

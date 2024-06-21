@@ -8,7 +8,7 @@ export default function SignUp() {
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  console.log("formData",formData);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value.trim() });
   };
@@ -58,7 +58,7 @@ export default function SignUp() {
         </div>
         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
           <div>
-            <Label className="dark:text-gray-300" value="Your username" />
+            <Label className="dark:text-gray-300" value="Username (no spaces, min 7 characters)" />
             <TextInput
               type="text"
               placeholder="Username"

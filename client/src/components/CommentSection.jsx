@@ -13,7 +13,9 @@ export default function CommentSection({ postId }) {
   const [showModal, setShowModal] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState(null);
   const navigate = useNavigate();
-
+  if(!currentUser){
+    navigate('/sign-in')
+  }
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (comment.length > 200) {
@@ -113,7 +115,7 @@ export default function CommentSection({ postId }) {
 
   return (
     <div className='max-w-2xl mx-auto w-full p-3'>
-      {currentUser.user ? (
+      {currentUser ? (
         <div className='flex flex-col sm:flex-row items-center gap-1 my-5 text-gray-500 text-sm'>
           <p>Signed in as:</p>
           <img
@@ -136,7 +138,7 @@ export default function CommentSection({ postId }) {
           </Link>
         </div>
       )}
-      {currentUser.user && (
+      {currentUser && (
         <form
           onSubmit={handleSubmit}
           className='border border-teal-500 rounded-md p-3'

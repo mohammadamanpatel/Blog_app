@@ -12,7 +12,6 @@ import path from "path";
 config();
 
 const __dirname = path.resolve();
-console.log("__dirname",__dirname);
 
 const app = express();
 

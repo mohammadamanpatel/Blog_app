@@ -1,7 +1,13 @@
-import { Link } from "react-router-dom";
-
+import { useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
 export default function PostCard({ post }) {
+  const currentUser = useSelector((state)=>state.user);
+  const navigate = useNavigate();
+  console.log("currentUser",currentUser);
   console.log("post in postcard", post);
+  if(!currentUser){
+    navigate('/sign-in');
+  }
   return (
     <div className="group relative w-full border border-teal-500 hover:border-2 h-[400px] overflow-hidden rounded-lg sm:w-[430px] transition-all">
       <Link to={`/post/${post.slug}`}>

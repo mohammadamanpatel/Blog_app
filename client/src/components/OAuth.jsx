@@ -1,11 +1,12 @@
 import React from "react";
 import { AiFillGoogleCircle } from "react-icons/ai";
 import { GoogleAuthProvider, signInWithPopup, getAuth } from "firebase/auth";
-import app from "../firebase.js";
 import { useDispatch } from "react-redux";
 import { signInSuccess } from "../redux/user/userSlice";
 import { useNavigate } from "react-router-dom";
+import { app } from "../firebase";
 
+console.log("app", app);
 export default function OAuth() {
   const auth = getAuth(app);
   const dispatch = useDispatch();
@@ -17,6 +18,7 @@ export default function OAuth() {
 
     try {
       const resultsFromGoogle = await signInWithPopup(auth, provider);
+      console.log("resultsFromGoogle", resultsFromGoogle);
       const res = await fetch("/api/auth/google", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

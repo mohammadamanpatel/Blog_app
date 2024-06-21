@@ -18,7 +18,7 @@ export const DashProfile = () => {
   const navigate = useNavigate();
   const { currentUser, loading, error } = useSelector((state) => state.user);
   const [updateUserError, setUpdateUserError] = useState(null);
-
+  console.log("currentUser",currentUser);
   const [data, setData] = useState({
     username: "",
     email: "",
@@ -175,7 +175,7 @@ export const DashProfile = () => {
           type="text"
           id="username"
           name="username"
-          placeholder="Username"
+          placeholder="Username (no spaces, more than 7 characters)"
           value={data.username}
           onChange={handleInputChange}
           className="bg-gray-100 p-2 rounded-md text-gray-700"

@@ -6,8 +6,8 @@ import uploadImageToCloudinary from "../utils/uploadImageToCloudinary.js";
 export const updateUser = async (req, res, next) => {
   try {
     const userId = req.params.userId;
-    console.log("userId, req.params.userId:", userId, req.params.userId);
-    console.log("req.body:", req.body);
+    // console.log("userId, req.params.userId:", userId, req.params.userId);
+    // console.log("req.body:", req.body);
 
     // Check if the user ID from the request matches the authenticated user's ID
     if (req.user.id !== userId) {
@@ -62,7 +62,7 @@ export const updateUser = async (req, res, next) => {
         avatarPath,
         "avatars"
       );
-      console.log("cloudinaryResponse:", cloudinaryResponse);
+      // console.log("cloudinaryResponse:", cloudinaryResponse);
 
       // Update avatar details in the updateFields object with Cloudinary response
       updateFields.avatar = {
@@ -74,9 +74,7 @@ export const updateUser = async (req, res, next) => {
       fs.rm(avatarPath, (err) => {
         if (err) {
           console.error("Error deleting file:", err);
-        } else {
-          console.log("Local file deleted");
-        }
+        } 
       });
     }
 
@@ -98,7 +96,7 @@ export const updateUser = async (req, res, next) => {
     res.status(200).json({user,message:"user updated successfully"});
   } catch (error) {
     // Handle any errors that occur during the update process
-    console.error("Error updating user:", error);
+    // console.error("Error updating user:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -111,7 +109,7 @@ export const deleteUser = async (req, res, next) => {
   }
   try {
     const deletedUser = await User.findByIdAndDelete(req.params.userId);
-    console.log("deletedUser",deletedUser);
+    // console.log("deletedUser",deletedUser);
     if (!deletedUser) {
       return res.status(404).json({
         message: "User not found",

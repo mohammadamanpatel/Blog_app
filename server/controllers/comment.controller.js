@@ -1,178 +1,128 @@
-import User from "../models/user.model.js";
-import bcryptjs from "bcryptjs";
-import jwt from "jsonwebtoken";
+import Comment from "../models/comment.model.js";
 
-const cookieOption = {
-  MaxAge: 100 * 24 * 60 * 60 * 1000,
-  httpOnly: true,
-  secure: true,
-};
-
-export const signup = async (req, res) => {
-  const { username, email, password } = req.body;
-
-  if (username) {
-    if (username.length < 7 || username.length > 20) {
-      return res
-        .status(400)
-        .json({ message: "Username must be between 7 and 20 characters" });
-    }
-    if (username.includes(" ")) {
-      return res
-        .status(400)
-        .json({ message: "Username cannot contain spaces" });
-    }
-    if (username !== username.toLowerCase()) {
-      return res.status(400).json({ message: "Username must be lowercase" });
-    }
-    if (!username.match(/^[a-zA-Z0-9]+$/)) {
-      return res
-        .status(400)
-        .json({ message: "Username can only contain letters and numbers" });
-    }
-  }
-
-  const alreadyExists = await User.findOne({ email });
-  if (alreadyExists) {
-    return res.status(404).json({
-      success: false,
-      message: "User already exists",
-    });
-  }
-
-  const hashedPassword = bcryptjs.hashSync(password, 10);
-  const user = new User({
-    username,
-    email,
-    password: hashedPassword,
-    avatar: {
-      secure_url:
-        "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png",
-      public_id: "public_id",
-    },
-  });
-
+export const createComment = async (req, res) => {
   try {
-    await user.save();
-    res.status(200).json({ message: "User created successfully!", user });
+    const { content, postId, userId } = req.body;
+
+    if (userId !== req.user.id) {
+      return res
+        .status(403)
+        .json({ message: "You are not allowed to create this comment" });
+    }
+
+    const newComment = new Comment({
+      content,
+      postId,
+      userId,
+    });
+    await newComment.save();
+
+    res.status(200).json(newComment);
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error.message,
-    });
+    res.status(500).json({ message: error.message });
   }
 };
 
-export const signin = async (req, res) => {
+export const getPostComments = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const comments = await Comment.find({ postId: req.params.postId }).sort({
+      createdAt: -1,
+    });
+    res.status(200).json(comments);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
-    if (!password || !email) {
-      return res.status(400).json({
-        message: "Some user credentials are missing",
-      });
+export const likeComment = async (req, res) => {
+  try {
+    const comment = await Comment.findById(req.params.commentId);
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
     }
-
-    let user = await User.findOne({ email }).select("+password");
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "Please signup",
-      });
-    }
-
-    if (bcryptjs.compareSync(password, user.password)) {
-      const payload = {
-        id: user._id,
-        isAdmin: user.isAdmin,
-      };
-      const jwtToken = jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRY,
-      });
-
-      user.jwtToken = jwtToken;
-      user.password = null;
-
-      res.cookie("jwtToken", jwtToken, cookieOption);
-      return res.status(200).json({
-        success: true,
-        jwtToken,
-        message: "User logged in",
-        user,
-      });
+    const userIndex = comment.likes.indexOf(req.user.id);
+    if (userIndex === -1) {
+      comment.numberOfLikes += 1;
+      comment.likes.push(req.user.id);
     } else {
-      return res.status(400).json({
-        success: false,
-        message: "Password incorrect",
-      });
+      comment.numberOfLikes -= 1;
+      comment.likes.splice(userIndex, 1);
     }
+    await comment.save();
+    res.status(200).json(comment);
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ message: error.message });
   }
 };
 
-export const google = async (req, res) => {
+export const editComment = async (req, res) => {
   try {
-    let user = await User.findOne({ email: req.body.email });
-    if (user) {
-      const jwtToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-      user.jwtToken = jwtToken;
-      user.password = null;
-      res.cookie("jwtToken", jwtToken, cookieOption).status(200).json({
-        success: true,
-        user,
-      });
-    } else {
-      const generatedPassword =
-        Math.random().toString(36).slice(-8) +
-        Math.random().toString(36).slice(-8);
-      const hashedPassword = bcryptjs.hashSync(generatedPassword, 10);
-      user = new User({
-        username:
-          req.body.name.split(" ").join("").toLowerCase() +
-          Math.random().toString(36).slice(-4),
-        email: req.body.email,
-        password: hashedPassword,
-        avatar: {
-          secure_url: req.body.photo,
-          public_id: "public_id",
-        },
-      });
-      await user.save();
-      const jwtToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-      user.jwtToken = jwtToken;
-      user.password = null;
-      res.cookie("jwtToken", jwtToken, cookieOption).status(200).json({
-        message: "User signed in",
-        success: true,
-        jwtToken,
-        user,
-      });
+    const comment = await Comment.findById(req.params.commentId);
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
     }
+    if (comment.userId !== req.user.id && !req.user.isAdmin) {
+      return res
+        .status(403)
+        .json({ message: "You are not allowed to edit this comment" });
+    }
+
+    const editedComment = await Comment.findByIdAndUpdate(
+      req.params.commentId,
+      {
+        content: req.body.content,
+      },
+      { new: true }
+    );
+    res.status(200).json(editedComment);
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error in Google Firebase auth",
-      error: error.message,
-    });
+    res.status(500).json({ message: error.message });
   }
 };
 
-export const signOut = async (req, res) => {
+export const deleteComment = async (req, res) => {
   try {
-    res.clearCookie("jwtToken");
-    res.status(200).json({
-      success: true,
-      message: "User has been logged out!",
-    });
+    const comment = await Comment.findById(req.params.commentId);
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+    if (comment.userId !== req.user.id && !req.user.isAdmin) {
+      return res
+        .status(403)
+        .json({ message: "You are not allowed to delete this comment" });
+    }
+    await Comment.findByIdAndDelete(req.params.commentId);
+    res.status(200).json({ message: "Comment has been deleted" });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getcomments = async (req, res) => {
+  if (!req.user.isAdmin)
+    return res
+      .status(403)
+      .json({ message: "You are not allowed to get all comments" });
+  try {
+    const startIndex = parseInt(req.query.startIndex) || 0;
+    const limit = parseInt(req.query.limit) || 9;
+    const sortDirection = req.query.sort === "desc" ? -1 : 1;
+    const comments = await Comment.find()
+      .sort({ createdAt: sortDirection })
+      .skip(startIndex)
+      .limit(limit);
+    const totalComments = await Comment.countDocuments();
+    const now = new Date();
+    const oneMonthAgo = new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      now.getDate()
+    );
+    const lastMonthComments = await Comment.countDocuments({
+      createdAt: { $gte: oneMonthAgo },
     });
+    res.status(200).json({ comments, totalComments, lastMonthComments });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };

@@ -99,10 +99,12 @@ export const deleteComment = async (req, res) => {
 };
 
 export const getcomments = async (req, res) => {
-  if (!req.user.isAdmin)
+  if (!req.user.isAdmin) {
     return res
       .status(403)
       .json({ message: "You are not allowed to get all comments" });
+  }
+
   try {
     const startIndex = parseInt(req.query.startIndex) || 0;
     const limit = parseInt(req.query.limit) || 9;

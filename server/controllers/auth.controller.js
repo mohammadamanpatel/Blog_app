@@ -1,13 +1,16 @@
 import User from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
+
 const cookieOption = {
   MaxAge: 100 * 24 * 60 * 60 * 1000,
   httpOnly: true,
   secure: true,
 };
-export const signup = async (req, res, next) => {
+
+export const signup = async (req, res) => {
   const { username, email, password } = req.body;
+
   if (username) {
     if (username.length < 7 || username.length > 20) {
       return res
@@ -28,13 +31,15 @@ export const signup = async (req, res, next) => {
         .json({ message: "Username can only contain letters and numbers" });
     }
   }
+
   const alreadyExists = await User.findOne({ email });
   if (alreadyExists) {
     return res.status(404).json({
       success: false,
-      message: "user already exists",
+      message: "User already exists",
     });
   }
+
   const hashedPassword = bcryptjs.hashSync(password, 10);
   const user = new User({
     username,
@@ -46,15 +51,14 @@ export const signup = async (req, res, next) => {
       public_id: "public_id",
     },
   });
+
   try {
     await user.save();
-    console.log("user after signup", user);
     res.status(200).json({ message: "User created successfully!", user });
   } catch (error) {
-    console.log("error", error);
     res.status(500).json({
       success: false,
-      message: "internal server error",
+      message: "Internal server error",
       error: error.message,
     });
   }
@@ -63,25 +67,22 @@ export const signup = async (req, res, next) => {
 export const signin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log("email,password", email, password);
+
     if (!password || !email) {
-      res.status(400).json({
-        message: "some userCredentials are missing",
+      return res.status(400).json({
+        message: "Some user credentials are missing",
       });
     }
-    let user = await User.findOne({ email }).select("+password"); //ye db call hai
+
+    let user = await User.findOne({ email }).select("+password");
     if (!user) {
       return res.status(401).json({
-        sucess: false,
-        message: "please signup",
+        success: false,
+        message: "Please signup",
       });
     }
-    //3) fir check karo password
 
-    console.log(password);
-    console.log(user.password);
-    if (await bcryptjs.compareSync(password, user.password)) {
-      //jwt token generate karo;
+    if (bcryptjs.compareSync(password, user.password)) {
       const payload = {
         id: user._id,
         isAdmin: user.isAdmin,
@@ -89,44 +90,34 @@ export const signin = async (req, res) => {
       const jwtToken = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRY,
       });
-      //token generate ho chuka hai
 
-      //user ke object me ise store kardiya
-      console.log("jwtToken", jwtToken);
       user.jwtToken = jwtToken;
-      console.log("user.jwtToken", user.jwtToken);
-      //user ke object mese password null kardo warna privacy nhi rahegi isse actual db me koi change nhi
-      //aayega means password sirf object me null hua hai jo findOne method se aaya
-
       user.password = null;
-
-      //ab cookie banao token se
-      // console.log("res.cookie",res.cookie("jwtToken", jwtToken, cookieOption));
 
       res.cookie("jwtToken", jwtToken, cookieOption);
       return res.status(200).json({
         success: true,
-        jwtToken: jwtToken,
-        message: "User Logged In",
+        jwtToken,
+        message: "User logged in",
         user,
       });
     } else {
       return res.status(400).json({
         success: false,
-        message: "password incorrect",
+        message: "Password incorrect",
       });
     }
   } catch (error) {
-    console.log(error);
     return res.status(500).json({
       success: false,
       message: error.message,
     });
   }
 };
-export const google = async (req, res, next) => {
+
+export const google = async (req, res) => {
   try {
-    var user = await User.findOne({ email: req.body.email });
+    let user = await User.findOne({ email: req.body.email });
     if (user) {
       const jwtToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
       user.jwtToken = jwtToken;
@@ -135,7 +126,6 @@ export const google = async (req, res, next) => {
         success: true,
         user,
       });
-      console.log("user", user);
     } else {
       const generatedPassword =
         Math.random().toString(36).slice(-8) +
@@ -157,24 +147,32 @@ export const google = async (req, res, next) => {
       user.jwtToken = jwtToken;
       user.password = null;
       res.cookie("jwtToken", jwtToken, cookieOption).status(200).json({
-        message: "user signed in",
+        message: "User signed in",
         success: true,
         jwtToken,
         user,
       });
-      console.log("newUser", user);
     }
   } catch (error) {
-    console.log("error in google fire base auth", error);
+    res.status(500).json({
+      success: false,
+      message: "Error in Google Firebase auth",
+      error: error.message,
+    });
   }
 };
-export const signOut = async (req, res, next) => {
+
+export const signOut = async (req, res) => {
   try {
     res.clearCookie("jwtToken");
-    res
-      .status(200)
-      .json({ success: true, message: "User has been logged out!" });
+    res.status(200).json({
+      success: true,
+      message: "User has been logged out!",
+    });
   } catch (error) {
-    next(error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };

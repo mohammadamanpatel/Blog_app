@@ -7,9 +7,7 @@ import deleteImageFromCloudinary from "../utils/deleteImageFromCloudinary.js";
 const upload = multer({ dest: "uploads/" }); // Assuming 'uploads/' is your upload directory
 
 export const create = async (req, res) => {
-  upload.single("image"), // Use multer to handle single file upload
-    console.log("req.body in post creation", req.body);
-  console.log("req.user", req.user);
+  upload.single("image");
 
   if (!req.user.isAdmin) {
     return res.status(403).json({
@@ -37,11 +35,8 @@ export const create = async (req, res) => {
         "posts"
       );
       fs.unlink(req.file.path, (err) => {
-        // Remove the file after uploading
         if (err) {
           console.error("Error deleting file:", err);
-        } else {
-          console.log("Local file deleted");
         }
       });
       imageUrl = {
@@ -60,8 +55,7 @@ export const create = async (req, res) => {
     });
 
     const savedPost = await newPost.save();
-    console.log("savedPost", savedPost);
-    res.status(201).json({ savedPost, message: "post created successfully" });
+    res.status(201).json({ savedPost, message: "Post created successfully" });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -70,22 +64,18 @@ export const create = async (req, res) => {
     });
   }
 };
-// Update a post
+
 export const updatepost = async (req, res) => {
   try {
-    console.log("req.params.postId", req.params.postId);
-    const postId = req.params.postId; // Extract the post ID from the request parameters
-    console.log("req.body in post update", req.body);
-    const { title, content, category } = req.body; // Extract updated fields from request body
-    console.log("req.user", req.user);
-    // Check if the user is an admin
+    const postId = req.params.postId;
+    const { title, content, category } = req.body;
+
     if (!req.user.isAdmin) {
       return res.status(403).json({
         message: "You are not allowed to update this post",
       });
     }
 
-    // Check if the post exists
     const post = await Post.findById(postId);
     if (!post) {
       return res.status(404).json({
@@ -93,42 +83,32 @@ export const updatepost = async (req, res) => {
       });
     }
 
-    // Update the post fields
     post.title = title || post.title;
     post.content = content || post.content;
     post.category = category || post.category;
 
-    // Update the post image if a new image is provided
-    console.log("req.file in post update", req.file);
     if (req.file) {
       try {
-        // Upload the new image to Cloudinary
         const cloudinaryResponse = await uploadImageToCloudinary(
           req.file.path,
           "posts"
         );
 
-        // Delete the old image from Cloudinary if it exists
         if (post.image && post.image.public_id) {
           await deleteImageFromCloudinary(post.image.public_id);
         }
 
-        // Update the post's image details
         post.image = {
           public_id: cloudinaryResponse.public_id,
           secure_url: cloudinaryResponse.secure_url,
         };
 
-        // Delete the local file after uploading to Cloudinary
         fs.unlink(req.file.path, (err) => {
           if (err) {
             console.error("Error deleting file:", err);
-          } else {
-            console.log("Local file deleted");
           }
         });
       } catch (error) {
-        console.error("Error uploading image to Cloudinary:", error.message);
         return res.status(500).json({
           success: false,
           message: "Failed to upload image to Cloudinary",
@@ -137,7 +117,6 @@ export const updatepost = async (req, res) => {
       }
     }
 
-    // Save the updated post
     const updatedPost = await post.save();
     res.status(200).json({
       success: true,
@@ -145,7 +124,6 @@ export const updatepost = async (req, res) => {
       updatedPost,
     });
   } catch (error) {
-    console.error("Error updating post:", error.message);
     res.status(500).json({
       success: false,
       message: "Internal Server Error",
@@ -154,7 +132,7 @@ export const updatepost = async (req, res) => {
   }
 };
 
-export const getposts = async (req, res, next) => {
+export const getposts = async (req, res) => {
   try {
     const startIndex = parseInt(req.query.startIndex) || 0;
     const limit = parseInt(req.query.limit) || 9;
@@ -174,11 +152,10 @@ export const getposts = async (req, res, next) => {
       .sort({ updatedAt: sortDirection })
       .skip(startIndex)
       .limit(limit);
-    console.log("posts",posts);  
+      
     const totalPosts = await Post.countDocuments();
 
     const now = new Date();
-
     const oneMonthAgo = new Date(
       now.getFullYear(),
       now.getMonth() - 1,
@@ -195,15 +172,14 @@ export const getposts = async (req, res, next) => {
       lastMonthPosts,
     });
   } catch (error) {
-    console.log("error",error);
     res.status(500).json({
       error: error,
       message: "Internal server error",
     });
   }
 };
-export const deletepost = async (req, res, next) => {
-  console.log("req.user", req.user);
+
+export const deletepost = async (req, res) => {
   if (!req.user.isAdmin || req.user.id !== req.params.userId) {
     return res.status(404).json({
       message: "You have no authority to delete",
@@ -214,7 +190,7 @@ export const deletepost = async (req, res, next) => {
     res.status(200).json("The post has been deleted");
   } catch (error) {
     res.status(500).json({
-      message: "internal server error",
+      message: "Internal server error",
       error: error,
     });
   }

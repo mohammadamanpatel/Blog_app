@@ -9,12 +9,12 @@ export default function DashPosts() {
   const [showMore, setShowMore] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [postIdToDelete, setPostIdToDelete] = useState("");
-
+  console.log("userPosts",userPosts);
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const res = await fetch(
-          `/api/post/getposts?userId=${currentUser.user._id}`
+          `/api/post/getposts`
         );
         const data = await res.json();
         if (res.ok) {
@@ -30,7 +30,7 @@ export default function DashPosts() {
     if (currentUser.user.isAdmin) {
       fetchPosts();
     }
-  }, [currentUser.user._id]);
+  }, []);
 
   const handleShowMore = async () => {
     const startIndex = userPosts.length;

@@ -17,6 +17,10 @@ const SignIn = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+     if (!formData.email || !formData.password) {
+      setErrorMessage("Please fill out all fields.");
+      return;
+    }
     try {
       dispatch(signInStart());
       const res = await fetch("/api/auth/signin", {

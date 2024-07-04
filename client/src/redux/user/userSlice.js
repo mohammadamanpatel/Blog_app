@@ -10,18 +10,18 @@ const userSlice = createSlice({
   reducers: {
     signInStart: (state) => {
       state.loading = true;
-      console.log("state in signInStart", state);
+      // console.log("state in signInStart", state);
     },
     signInSuccess: (state, action) => {
       state.currentUser = action.payload;
       state.loading = false;
       state.error = null;
-      console.log("signInSuccess state", state);
+      // console.log("signInSuccess state", state);
     },
     signInFailure: (state, action) => {
       state.error = action.payload;
       state.loading = false;
-      console.log("signInfailure state", state);
+      // console.log("signInfailure state", state);
     },
     signOutUserStart: (state) => {
       state.loading = true;
@@ -30,12 +30,12 @@ const userSlice = createSlice({
       state.currentUser = null;
       state.loading = false;
       state.error = null;
-      console.log("state",state);
+      // console.log("state",state);
     },
     signOutUserFailure: (state, action) => {
       state.error = action.payload;
       state.loading = false;
-      console.log("action in signout failure",action);
+      // console.log("action in signout failure",action);
     },
     updateUserStart: (state) => {
       state.loading = true;
@@ -44,7 +44,7 @@ const userSlice = createSlice({
       state.currentUser = action.payload;
       state.loading = false;
       state.error = null;
-      console.log("action.payload in updateUser reducer",action);
+      // console.log("action.payload in updateUser reducer",action);
     },
     updateUserFailure: (state, action) => {
       state.error = action.payload;
@@ -57,12 +57,12 @@ const userSlice = createSlice({
       state.currentUser = null;
       state.loading = false;
       state.error = null;
-      console.log("deleteUSer success",state);
+      // console.log("deleteUSer success",state);
     },
     deleteUserFailure: (state, action) => {
       state.error = action.payload;
       state.loading = false;
-      console.log("deleteUserFailure",action);
+      // console.log("deleteUserFailure",action);
     },
   },
 });

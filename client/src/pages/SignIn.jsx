@@ -1,4 +1,3 @@
-import { Alert, Button, Label, Spinner, TextInput } from 'flowbite-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import OAuth from '../components/OAuth';
@@ -9,9 +8,9 @@ const SignIn = () => {
   const [formData, setFormData] = useState({});
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(false);
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  console.log("formData",formData);
+  
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value.trim() });
   };
@@ -28,16 +27,16 @@ const SignIn = () => {
         body: JSON.stringify(formData),
       });
       const data = await res.json();
-      console.log(data);
       if (data.success === false) {
         dispatch(signInFailure(data.message));
+        setErrorMessage(data.message);
         return;
       }
       dispatch(signInSuccess(data));
       navigate("/");
     } catch (error) {
-      console.log("error",error);
       dispatch(signInFailure(error.message));
+      setErrorMessage(error.message);
     }
   };
 
@@ -57,40 +56,42 @@ const SignIn = () => {
         </div>
         <form className='flex flex-col gap-4' onSubmit={handleSubmit}>
           <div>
-            <Label className='dark:text-gray-300' value='Your email' />
-            <TextInput
+            <label htmlFor='email' className='block text-sm font-medium text-gray-700 dark:text-gray-300'>Your email</label>
+            <input
               type='email'
-              placeholder='name@company.com'
               id='email'
+              placeholder='name@company.com'
               onChange={handleChange}
-              className='dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500'
+              className='mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
             />
           </div>
           <div>
-            <Label className='dark:text-gray-300' value='Your password' />
-            <TextInput
+            <label htmlFor='password' className='block text-sm font-medium text-gray-700 dark:text-gray-300'>Your password</label>
+            <input
               type='password'
-              placeholder='Password'
               id='password'
+              placeholder='Password'
               onChange={handleChange}
-              className='dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500'
+              className='mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'
             />
           </div>
-          <Button
-            gradientDuoTone='purpleToPink'
+          <button
             type='submit'
             disabled={loading}
-            className='mt-4'
+            className={`mt-4 inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white ${loading ? 'bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
           >
             {loading ? (
               <>
-                <Spinner size='sm' />
-                <span className='pl-3'>Loading...</span>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+                <span>Loading...</span>
               </>
             ) : (
               'Sign In'
             )}
-          </Button>
+          </button>
           <OAuth />
         </form>
         <div className='flex gap-2 text-sm mt-5 dark:text-gray-300 justify-center'>
@@ -100,9 +101,9 @@ const SignIn = () => {
           </Link>
         </div>
         {errorMessage && (
-          <Alert className='mt-5' color='failure'>
+          <div className='mt-5 p-4 bg-red-100 border border-red-400 text-red-700 rounded'>
             {errorMessage}
-          </Alert>
+          </div>
         )}
       </div>
     </div>

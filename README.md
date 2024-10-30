@@ -42,7 +42,7 @@ Getting Started
 To clone the repository and run the application locally, follow these steps:
 
 1. Clone the repository:
-   git clone https://github.com/yourusername/blog-app.git
+   git clone https://github.com/mohammadamanpatel/Blog_app
 
 2. Navigate to the project directory:
    cd blog-app

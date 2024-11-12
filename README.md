@@ -3,8 +3,6 @@ My Latest Blog App Project
 
 ---
 
-Explore the Blog app video at => https://www.linkedin.com/posts/mohd-aman-patel_blogapp-mongodb-expressjs-activity-7209975089419743233-qnQS?utm_source=share&utm_medium=member_desktop
-
 A feature-rich blog application built using the MERN stack (MongoDB, Express.js, React.js, Node.js). This platform is designed to provide an intuitive and seamless blogging experience for users.
 
 Technologies Used
@@ -36,6 +34,8 @@ Key Features
 - Comment System: Developed a robust comment system with CRUD operations, allowing interaction and engagement on posts.
 - Advanced Search and Sorting: Implemented advanced search functionality and sorting options based on criteria such as date, category, and more.
 - User Management: Created comprehensive user management functionalities, including user authentication, creation, updating, deletion, and profile management.
+
+Explore the Blog app video at => https://www.linkedin.com/posts/mohd-aman-patel_blogapp-mongodb-expressjs-activity-7209975089419743233-qnQS?utm_source=share&utm_medium=member_desktop
 
 Getting Started
 
